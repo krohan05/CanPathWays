@@ -144,16 +144,16 @@ public class DashboardPage {
 						}
 					}
 				}
-				if (i == totalRows - 1) {
-					eleUtil.waitForElementVisible(paginationNextBtn, 5);
-					if (eleUtil.getElementsCount(paginationNextBtn) > 0) {
-						eleUtil.doClick(paginationNextBtn);
-						action.pause(Duration.ofSeconds(2)).perform();
-						i = -1;
-						totalRows = eleUtil.getElements(totalJobListRows).size();
-					} else {
-						break;
-					}
+			}
+			if (i == totalRows - 1) {
+				eleUtil.waitForElementVisible(paginationNextBtn, 5);
+				if (eleUtil.getElementsCount(paginationNextBtn) > 0) {
+					eleUtil.doClick(paginationNextBtn);
+					action.pause(Duration.ofSeconds(2)).perform();
+					i = -1;
+					totalRows = eleUtil.getElements(totalJobListRows).size();
+				} else {
+					break;
 				}
 			}
 		}
