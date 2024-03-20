@@ -30,6 +30,7 @@ public class DashboardPage {
 	By matchListRows = By.xpath("//table[@id='matchlistpanel']//tbody/tr");
 	By inviteModalPopUp = By.xpath("//section[@id='howtoapply']");
 	By inviteToApplyBtn = By.xpath("//section[@id='howtoapply']//input[@value='Invite to apply']");
+	By paginationNextBtn = By.xpath("//a[@class='paginate_button next']");
 
 	public DashboardPage(WebDriver driver) {
 		this.driver = driver;
@@ -69,10 +70,10 @@ public class DashboardPage {
 		action.pause(Duration.ofSeconds(3)).perform();
 	}
 
-	public void navigateBackToJobMatchForEmployersPage() {
-		driver.navigate().back();
+	public void navigateBackToJobMatchForEmployersPage(String url) {
+		driver.get(url);
 		eleUtil.waitForTitleContains("Job Match for Employers", 10);
-		action.pause(Duration.ofSeconds(3)).perform();
+		action.pause(Duration.ofSeconds(2)).perform();
 		eleUtil.waitForElementVisible(matchListLengthDropDown, 10);
 		jsUtil.scrollIntoView(eleUtil.getElement(matchListLengthDropDown));
 	}
@@ -80,15 +81,21 @@ public class DashboardPage {
 	public void sendInvite() {
 		changeTableLengthTo("100");
 		List<WebElement> rowElements = eleUtil.getElements(totalJobListRows);
+		int totalRows = rowElements.size();
 
-		for (WebElement ele : rowElements) {
-			String fileStatus = ele.findElement(By.xpath("td/span[contains(@class,'statusId')]")).getText();
-			String hitCount = ele
+		for (int i = 0; i < totalRows; i++) {
+			int index = i + 1;
+			By dasboardRowLocator = By.xpath("(//table[@id='joblist']//tbody/tr)[" + index + "]");
+
+			WebElement rowElement = eleUtil.getElement(dasboardRowLocator);
+
+			String fileStatus = rowElement.findElement(By.xpath("td/span[contains(@class,'statusId')]")).getText();
+			String hitCount = rowElement
 					.findElement(By.xpath("td[contains(@class,'align-center')]/a[contains(@class,'num-matches')]/span"))
 					.getText();
 
 			if (fileStatus.equalsIgnoreCase("Advertised") && !hitCount.equalsIgnoreCase("0")) {
-				ele.findElement(By.xpath("td[contains(@class,'align-center')]/a[@class='num-matches hit']/span"))
+				rowElement.findElement(By.xpath("td[contains(@class,'align-center')]/a[@class='num-matches hit']/span"))
 						.click();
 				eleUtil.waitForTitleContains("Job Match for Employers", 10);
 				action.pause(Duration.ofSeconds(3)).perform();
@@ -96,28 +103,59 @@ public class DashboardPage {
 
 				changeMatchListLengthTo("100");
 				action.pause(Duration.ofSeconds(2)).perform();
-				List<WebElement> matchElements = eleUtil.getElements(matchListRows);
 
-				for (WebElement match : matchElements) {
-					String invitedStatus = match
+				String jobMatchUrl = driver.getCurrentUrl();
+				List<WebElement> matchElements = eleUtil.getElements(matchListRows);
+				int totaljobMatchRows = matchElements.size();
+
+				for (int j = 0; j < totaljobMatchRows; j++) {
+					int matchIndex = j + 1;
+					By jobMatchRowLocator = By.xpath("(//table[@id='matchlistpanel']//tbody/tr)[" + matchIndex + "]");
+					WebElement jobMatchRowElement = eleUtil.getElement(jobMatchRowLocator);
+					jsUtil.scrollIntoView(jobMatchRowElement);
+
+					String invitedStatus = jobMatchRowElement
 							.findElement(
 									By.xpath("td[contains(@class,'invited-column')]//span[contains(@class,'wb-inv')]"))
 							.getText();
+
 					if (invitedStatus.equalsIgnoreCase("Not invited to apply")) {
-						match.findElement(By.xpath(
+
+						jobMatchRowElement.findElement(By.xpath(
 								"td[contains(@class,'control sorting')]/a[contains(@title,'Show full profile')]"))
 								.click();
 						eleUtil.waitForElementVisible(inviteModalPopUp, 20);
 						jsUtil.scrollIntoView(eleUtil.getElement(inviteToApplyBtn));
 						eleUtil.doClick(inviteToApplyBtn);
 						eleUtil.waitForElementToBeInvisible(inviteModalPopUp, 40);
+						navigateBackToJobMatchForEmployersPage(jobMatchUrl);
 
+						if (j == totaljobMatchRows - 1) {
+							eleUtil.waitForElementVisible(paginationNextBtn, 5);
+							if (eleUtil.getElementsCount(paginationNextBtn) > 0) {
+								eleUtil.doClick(paginationNextBtn);
+								action.pause(Duration.ofSeconds(2)).perform();
+								j = -1;
+								totaljobMatchRows = eleUtil.getElements(matchListRows).size();
+							} else {
+								clickOnSideNav("Job postings");
+								break;
+							}
+						}
 					}
 				}
-
+				if (i == totalRows - 1) {
+					eleUtil.waitForElementVisible(paginationNextBtn, 5);
+					if (eleUtil.getElementsCount(paginationNextBtn) > 0) {
+						eleUtil.doClick(paginationNextBtn);
+						action.pause(Duration.ofSeconds(2)).perform();
+						i = -1;
+						totalRows = eleUtil.getElements(totalJobListRows).size();
+					} else {
+						break;
+					}
+				}
 			}
-
 		}
 	}
-
 }
