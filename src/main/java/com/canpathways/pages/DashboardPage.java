@@ -83,8 +83,11 @@ public class DashboardPage {
 
 		for (WebElement ele : rowElements) {
 			String fileStatus = ele.findElement(By.xpath("td/span[contains(@class,'statusId')]")).getText();
+			String hitCount = ele
+					.findElement(By.xpath("td[contains(@class,'align-center')]/a[contains(@class,'num-matches')]/span"))
+					.getText();
 
-			if (fileStatus.equalsIgnoreCase("Advertised")) {
+			if (fileStatus.equalsIgnoreCase("Advertised") && !hitCount.equalsIgnoreCase("0")) {
 				ele.findElement(By.xpath("td[contains(@class,'align-center')]/a[@class='num-matches hit']/span"))
 						.click();
 				eleUtil.waitForTitleContains("Job Match for Employers", 10);
@@ -109,8 +112,6 @@ public class DashboardPage {
 						eleUtil.doClick(inviteToApplyBtn);
 						eleUtil.waitForElementToBeInvisible(inviteModalPopUp, 40);
 
-
-						
 					}
 				}
 
