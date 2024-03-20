@@ -17,7 +17,7 @@ public class SendInviteTest extends BaseTest {
 	}
 
 	@Test
-	public void loginTest() throws InterruptedException {
+	public void sendInvite() throws InterruptedException {
 		loginSecQuesPg = loginPg.login(prop.getProperty("username"), prop.getProperty("password"));
 		String secQues = loginSecQuesPg.getSecurityQuestion().trim();
 		String secAnswer = excelUtil.getDataForKnownValue("securityQuestions", "Answer", secQues);
